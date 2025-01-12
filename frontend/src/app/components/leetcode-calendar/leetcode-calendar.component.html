@@ -1,0 +1,216 @@
+<!-- leetcode-calendar.component.html -->
+<div class="calendar-layout">
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <button mat-button class="add-button" (click)="openAddDialog()">
+        <mat-icon>add</mat-icon>
+      </button>
+    </div>
+
+    <div class="current-month">
+      {{ currentDate | date : "MMMM yyyy" }}
+    </div>
+
+    <div class="calendar-mini">
+      <div class="mini-calendar">
+        <div class="mini-header">
+          <button mat-icon-button (click)="previousMonthMini()">
+            <mat-icon>chevron_left</mat-icon>
+          </button>
+          <span>{{ currentDate | date : "MMM yyyy" }}</span>
+          <button mat-icon-button (click)="nextMonthMini()">
+            <mat-icon>chevron_right</mat-icon>
+          </button>
+        </div>
+        <div class="mini-weekdays">
+          <div *ngFor="let day of weekDays">{{ day }}</div>
+        </div>
+        <div class="mini-days">
+          <div
+            *ngFor="let day of getMinicalendarDays()"
+            [class.other-month]="!day.isCurrentMonth"
+            [class.today]="isToday(day.date)"
+            [class.has-problem]="hasSubmission(day.date)"
+            (click)="selectDate(day.date)"
+          >
+            {{ day.date | date : "d" }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <h3>TODAY'S PROBLEMS</h3>
+      <div class="problem-list">
+        <div class="problem-item" *ngFor="let problem of todayProblems">
+          <div class="problem-header">
+            <span class="time">{{ problem.date | date : "shortTime" }}</span>
+            <span class="status" [class.solved]="problem.solved">
+              {{ problem.solved ? "Solved" : "Unsolved" }}
+            </span>
+          </div>
+          <span class="title">{{ problem.title }}</span>
+          <div class="problem-details">
+            <span class="tag difficulty" [class]="problem.difficulty">{{
+              problem.difficulty
+            }}</span>
+            <span class="tag topic">{{ problem.topic }}</span>
+          </div>
+          <span class="notes" *ngIf="problem.notes">{{ problem.notes }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <h3>UPCOMING</h3>
+      <div class="problem-list">
+        <div class="problem-item" *ngFor="let problem of upcomingProblems">
+          <div class="problem-header">
+            <span class="date">{{ problem.date | date : "MMM d" }}</span>
+            <span class="status" [class.solved]="problem.solved">
+              {{ problem.solved ? "Solved" : "Unsolved" }}
+            </span>
+          </div>
+          <span class="title">{{ problem.title }}</span>
+          <div class="problem-details">
+            <span class="tag difficulty" [class]="problem.difficulty">{{
+              problem.difficulty
+            }}</span>
+            <span class="tag topic">{{ problem.topic }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-spacer"></div>
+
+    <div class="chatbot-section">
+      <div class="chatbot-header">
+        <mat-icon>chat</mat-icon>
+        <span>LeetCode Assistant</span>
+      </div>
+      <div class="chat-messages" #chatContainer>
+        <div
+          *ngFor="let message of chatMessages"
+          class="message"
+          [class.user-message]="message.isUser"
+          [class.bot-message]="!message.isUser"
+          (contextmenu)="onMessageRightClick($event, message)"
+          @fadeSlide
+        >
+          <div class="message-content">{{ message.text }}</div>
+          <div class="message-timestamp">
+            {{ message.timestamp | date : "shortTime" }}
+          </div>
+        </div>
+        <div class="typing-indicator" *ngIf="isTyping" @typingIndicator>
+          <div class="dot"></div>
+          <div class="dot"></div>
+          <div class="dot"></div>
+        </div>
+      </div>
+      <div class="chatbot-input">
+        <input
+          type="text"
+          placeholder="Ask for help..."
+          [(ngModel)]="chatMessage"
+          (keyup.enter)="sendMessage()"
+        />
+        <button mat-icon-button (click)="sendMessage()">
+          <mat-icon>send</mat-icon>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="main-calendar">
+    <mat-card class="calendar-card">
+      <div class="calendar-header">
+        <div class="view-toggles">
+          <mat-button-toggle-group
+            [value]="currentView"
+            (change)="onViewChange($event)"
+          >
+            <mat-button-toggle value="day">Day</mat-button-toggle>
+            <mat-button-toggle value="week">Week</mat-button-toggle>
+            <mat-button-toggle value="month">Month</mat-button-toggle>
+            <mat-button-toggle value="year">Year</mat-button-toggle>
+          </mat-button-toggle-group>
+        </div>
+        <div class="month-navigation">
+          <button mat-icon-button (click)="previousMonth()">
+            <mat-icon>chevron_left</mat-icon>
+          </button>
+          <button mat-icon-button (click)="nextMonth()">
+            <mat-icon>chevron_right</mat-icon>
+          </button>
+        </div>
+      </div>
+
+      <div class="calendar-grid">
+        <div class="weekday-header" *ngFor="let day of weekDays">{{ day }}</div>
+        <div
+          *ngFor="let day of calendarDays"
+          class="calendar-day"
+          [class.today]="isToday(day.date)"
+          [class.other-month]="!day.isCurrentMonth"
+          (click)="selectDate(day.date, $event)"
+        >
+          <span class="day-number">{{ day.date | date : "d" }}</span>
+          <div class="problems-container">
+            <div
+              *ngFor="let problem of getProblemsForDate(day.date)"
+              class="problem-title"
+              [class.easy]="problem.difficulty === 'Easy'"
+              [class.medium]="problem.difficulty === 'Medium'"
+              [class.hard]="problem.difficulty === 'Hard'"
+              (click)="openEditProblem($event, problem)"
+              (contextmenu)="onProblemRightClick($event, problem)"
+              (mouseenter)="setHoverProblem(problem)"
+              (mouseleave)="setHoverProblem(null)"
+            >
+              {{ problem.title }}
+              <div class="problem-hover" *ngIf="hoverProblem === problem">
+                <div class="problem-details">
+                  <div>Difficulty: {{ problem.difficulty }}</div>
+                  <div>Topic: {{ problem.topic }}</div>
+                  <div>
+                    Status: {{ problem.solved ? "Solved" : "Not Solved" }}
+                  </div>
+                  <div *ngIf="problem.notes">Notes: {{ problem.notes }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </mat-card>
+  </div>
+</div>
+
+<div
+  style="visibility: hidden; position: fixed"
+  [style.left]="menuTopLeftPosition.x"
+  [style.top]="menuTopLeftPosition.y"
+>
+  <div [matMenuTriggerFor]="rightClickMenu" #contextMenu="matMenuTrigger"></div>
+</div>
+
+<mat-menu #rightClickMenu="matMenu">
+  <ng-container *ngIf="selectedDate">
+    <button mat-menu-item (click)="openAddDialog('', selectedDate)">
+      <mat-icon>add</mat-icon>
+      <span>Add Problem</span>
+    </button>
+  </ng-container>
+  <ng-container *ngIf="selectedProblem">
+    <button mat-menu-item (click)="openEditProblem($event, selectedProblem)">
+      <mat-icon>edit</mat-icon>
+      <span>Edit Problem</span>
+    </button>
+    <button mat-menu-item (click)="openDeleteConfirmation(selectedProblem)">
+      <mat-icon>delete</mat-icon>
+      <span>Delete Problem</span>
+    </button>
+  </ng-container>
+</mat-menu>

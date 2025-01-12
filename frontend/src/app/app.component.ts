@@ -1,12 +1,13 @@
+// src/app/app.component.ts
 import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { LeetCodeCalendarComponent } from './components/leetcode-calendar/leetcode-calendar.component';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
-  templateUrl: './app.component.html',
-  styleUrl: './app.component.scss'
+  standalone: true,
+  imports: [LeetCodeCalendarComponent],
+  template: ` <app-leetcode-calendar></app-leetcode-calendar> `,
 })
 export class AppComponent {
-  title = 'frontend';
+  title = 'LeetCode Tracker';
 }

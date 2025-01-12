@@ -1,0 +1,28 @@
+<!-- src/app/components/leetcode-calendar/add-problem-dialog/add-problem-dialog.component.html -->
+<h2 mat-dialog-title>Add New Problem</h2>
+<div mat-dialog-content>
+  <mat-form-field appearance="fill" class="full-width">
+    <mat-label>Problem Title</mat-label>
+    <input matInput [(ngModel)]="data.title" required />
+  </mat-form-field>
+
+  <mat-form-field appearance="fill" class="full-width">
+    <mat-label>Difficulty</mat-label>
+    <mat-select [(ngModel)]="data.difficulty" required>
+      <mat-option value="Easy">Easy</mat-option>
+      <mat-option value="Medium">Medium</mat-option>
+      <mat-option value="Hard">Hard</mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field appearance="fill" class="full-width">
+    <mat-label>Date</mat-label>
+    <input matInput type="datetime-local" [(ngModel)]="data.date" required />
+  </mat-form-field>
+</div>
+<div mat-dialog-actions>
+  <button mat-button (click)="onCancel()">Cancel</button>
+  <button mat-button color="primary" (click)="onSave()" [disabled]="!isValid()">
+    Save
+  </button>
+</div>

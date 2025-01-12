@@ -1,0 +1,10 @@
+// src/app/components/leetcode-calendar/add-problem-dialog/add-problem-dialog.component.scss
+.full-width {
+  width: 100%;
+  margin-bottom: 15px;
+}
+
+mat-dialog-actions {
+  justify-content: flex-end;
+  gap: 8px;
+}
